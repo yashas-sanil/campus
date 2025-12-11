@@ -1,0 +1,562 @@
+import React, { useState } from 'react';
+import { Search, MapPin, Building2, User, Home, Bell, BookOpen, Beaker, Briefcase, Coffee, ChevronRight, Navigation, Clock, Phone, Star } from 'lucide-react';
+
+const CampusGuideApp = () => {
+  const [activeScreen, setActiveScreen] = useState('home');
+  const [selectedBuilding, setSelectedBuilding] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [savedLocations, setSavedLocations] = useState(['Main Library', 'CS Department']);
+
+  const announcements = [
+    { id: 1, title: 'Welcome Week Events', time: '2 hours ago', important: true },
+    { id: 2, title: 'Library Hours Extended', time: '5 hours ago', important: false },
+    { id: 3, title: 'New Cafeteria Menu Available', time: '1 day ago', important: false }
+  ];
+
+  const buildings = [
+    { 
+      id: 1, 
+      name: 'Main Library', 
+      category: 'Library', 
+      icon: BookOpen,
+      rooms: ['Reading Hall 101', 'Study Room 201-205', 'Computer Lab 301'],
+      timing: '7:00 AM - 11:00 PM',
+      description: 'Central library with extensive collection of books, journals, and digital resources.',
+      phone: '+1 (555) 123-4567',
+      coordinates: { x: 50, y: 40 }
+    },
+    { 
+      id: 2, 
+      name: 'Computer Science Building', 
+      category: 'Department', 
+      icon: Briefcase,
+      rooms: ['Classroom 101-110', 'Lab A, B, C', 'Faculty Offices 201-215'],
+      timing: '6:00 AM - 10:00 PM',
+      description: 'Home to Computer Science department with modern labs and lecture halls.',
+      phone: '+1 (555) 123-4568',
+      coordinates: { x: 30, y: 60 }
+    },
+    { 
+      id: 3, 
+      name: 'Science Lab Complex', 
+      category: 'Lab', 
+      icon: Beaker,
+      rooms: ['Physics Lab 1-3', 'Chemistry Lab 1-4', 'Biology Lab 1-2'],
+      timing: '8:00 AM - 8:00 PM',
+      description: 'State-of-the-art laboratories for physics, chemistry, and biology experiments.',
+      phone: '+1 (555) 123-4569',
+      coordinates: { x: 70, y: 50 }
+    },
+    { 
+      id: 4, 
+      name: 'Student Center', 
+      category: 'Common Area', 
+      icon: Coffee,
+      rooms: ['Cafeteria', 'Student Lounge', 'Recreation Room', 'Meeting Rooms'],
+      timing: '7:00 AM - 10:00 PM',
+      description: 'Hub for student activities, dining, and social gatherings.',
+      phone: '+1 (555) 123-4570',
+      coordinates: { x: 50, y: 70 }
+    },
+    { 
+      id: 5, 
+      name: 'Administration Building', 
+      category: 'Admin', 
+      icon: Building2,
+      rooms: ['Admissions Office', 'Registrar', 'Finance Office', "Dean's Office"],
+      timing: '9:00 AM - 5:00 PM',
+      description: 'Administrative offices for student services and university management.',
+      phone: '+1 (555) 123-4571',
+      coordinates: { x: 40, y: 30 }
+    },
+    { 
+      id: 6, 
+      name: 'Engineering Block', 
+      category: 'Department', 
+      icon: Briefcase,
+      rooms: ['Lecture Halls 1-5', 'Workshop A-D', 'Project Lab'],
+      timing: '7:00 AM - 9:00 PM',
+      description: 'Engineering department with workshops and project spaces.',
+      phone: '+1 (555) 123-4572',
+      coordinates: { x: 65, y: 35 }
+    }
+  ];
+
+  const toggleSaveLocation = (locationName) => {
+    setSavedLocations(prev => 
+      prev.includes(locationName) 
+        ? prev.filter(loc => loc !== locationName)
+        : [...prev, locationName]
+    );
+  };
+
+  const filteredBuildings = buildings.filter(building => 
+    building.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    building.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    building.rooms.some(room => room.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
+  const renderHome = () => (
+    <div className="flex-1 overflow-auto pb-20">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6 rounded-b-3xl">
+        <div className="flex justify-between items-start mb-6">
+          <div>
+            <h1 className="text-2xl font-bold">Welcome Back!</h1>
+            <p className="text-indigo-100 text-sm mt-1">Find your way around campus</p>
+          </div>
+          <div className="bg-white/20 p-2 rounded-full">
+            <Bell className="w-6 h-6" />
+          </div>
+        </div>
+        
+        {/* Search Bar */}
+        <div className="bg-white rounded-2xl p-3 flex items-center shadow-lg">
+          <Search className="w-5 h-5 text-gray-400 mr-2" />
+          <input
+            type="text"
+            placeholder="Search buildings, rooms..."
+            className="flex-1 outline-none text-gray-700"
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              if (e.target.value) setActiveScreen('search');
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Quick Links */}
+      <div className="p-6">
+        <h2 className="text-lg font-bold text-gray-800 mb-4">Quick Access</h2>
+        <div className="grid grid-cols-2 gap-4">
+          <div 
+            onClick={() => setActiveScreen('explore')}
+            className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-4 text-white cursor-pointer transform hover:scale-105 transition"
+          >
+            <Building2 className="w-8 h-8 mb-2" />
+            <h3 className="font-semibold">All Buildings</h3>
+            <p className="text-xs text-blue-100 mt-1">Explore campus</p>
+          </div>
+          <div 
+            onClick={() => setActiveScreen('map')}
+            className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-4 text-white cursor-pointer transform hover:scale-105 transition"
+          >
+            <MapPin className="w-8 h-8 mb-2" />
+            <h3 className="font-semibold">Campus Map</h3>
+            <p className="text-xs text-green-100 mt-1">Navigate visually</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Announcements */}
+      <div className="px-6 pb-6">
+        <h2 className="text-lg font-bold text-gray-800 mb-4">Campus Updates</h2>
+        {announcements.map(announcement => (
+          <div key={announcement.id} className="bg-white rounded-xl p-4 mb-3 shadow-sm border border-gray-100">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <h3 className={`font-semibold ${announcement.important ? 'text-indigo-600' : 'text-gray-800'}`}>
+                  {announcement.title}
+                </h3>
+                <p className="text-xs text-gray-500 mt-1">{announcement.time}</p>
+              </div>
+              {announcement.important && (
+                <span className="bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full">Important</span>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Saved Locations */}
+      <div className="px-6 pb-6">
+        <h2 className="text-lg font-bold text-gray-800 mb-4">Saved Locations</h2>
+        <div className="grid grid-cols-1 gap-3">
+          {savedLocations.slice(0, 2).map(location => {
+            const building = buildings.find(b => b.name === location);
+            return (
+              <div 
+                key={location}
+                onClick={() => {
+                  setSelectedBuilding(building);
+                  setActiveScreen('details');
+                }}
+                className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-4 flex items-center justify-between cursor-pointer border border-purple-100"
+              >
+                <div className="flex items-center">
+                  <Star className="w-5 h-5 text-yellow-500 mr-3 fill-yellow-500" />
+                  <div>
+                    <h3 className="font-semibold text-gray-800">{location}</h3>
+                    <p className="text-xs text-gray-600">Tap for directions</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-400" />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderExplore = () => (
+    <div className="flex-1 overflow-auto pb-20">
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6 rounded-b-3xl">
+        <h1 className="text-2xl font-bold">Explore Campus</h1>
+        <p className="text-indigo-100 text-sm mt-1">Browse all buildings and facilities</p>
+      </div>
+
+      <div className="p-6">
+        {['All', 'Department', 'Lab', 'Library', 'Admin', 'Common Area'].map(category => (
+          <div key={category} className="mb-6">
+            <h2 className="text-lg font-bold text-gray-800 mb-3">
+              {category === 'All' ? 'All Buildings' : category}
+            </h2>
+            <div className="space-y-3">
+              {buildings
+                .filter(b => category === 'All' || b.category === category)
+                .map(building => {
+                  const Icon = building.icon;
+                  return (
+                    <div
+                      key={building.id}
+                      onClick={() => {
+                        setSelectedBuilding(building);
+                        setActiveScreen('details');
+                      }}
+                      className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition"
+                    >
+                      <div className="flex items-center">
+                        <div className="bg-indigo-100 p-3 rounded-xl mr-4">
+                          <Icon className="w-6 h-6 text-indigo-600" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-800">{building.name}</h3>
+                          <p className="text-sm text-gray-500">{building.category}</p>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-gray-400" />
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderMap = () => (
+    <div className="flex-1 overflow-auto pb-20">
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6 rounded-b-3xl">
+        <h1 className="text-2xl font-bold">Campus Map</h1>
+        <p className="text-indigo-100 text-sm mt-1">Tap markers to view details</p>
+      </div>
+
+      <div className="p-6">
+        <div className="bg-green-100 rounded-2xl p-4 relative" style={{ height: '500px' }}>
+          {/* Map Background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-green-200 to-green-300 rounded-2xl opacity-50"></div>
+          
+          {/* Road Lines */}
+          <div className="absolute top-1/2 left-0 right-0 h-1 bg-gray-400 opacity-30"></div>
+          <div className="absolute top-0 bottom-0 left-1/2 w-1 bg-gray-400 opacity-30"></div>
+          
+          {/* Building Markers */}
+          {buildings.map(building => {
+            const Icon = building.icon;
+            return (
+              <div
+                key={building.id}
+                onClick={() => {
+                  setSelectedBuilding(building);
+                  setActiveScreen('details');
+                }}
+                className="absolute cursor-pointer transform -translate-x-1/2 -translate-y-1/2"
+                style={{ 
+                  left: `${building.coordinates.x}%`, 
+                  top: `${building.coordinates.y}%` 
+                }}
+              >
+                <div className="bg-indigo-600 text-white p-3 rounded-full shadow-lg hover:scale-110 transition">
+                  <Icon className="w-6 h-6" />
+                </div>
+                <div className="bg-white px-2 py-1 rounded-lg shadow-md mt-2 text-xs font-semibold text-gray-800 whitespace-nowrap">
+                  {building.name}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Legend */}
+        <div className="mt-6 bg-white rounded-xl p-4 shadow-sm">
+          <h3 className="font-semibold text-gray-800 mb-3">Legend</h3>
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { icon: Building2, label: 'Admin', color: 'bg-indigo-600' },
+              { icon: Briefcase, label: 'Department', color: 'bg-blue-600' },
+              { icon: Beaker, label: 'Lab', color: 'bg-purple-600' },
+              { icon: BookOpen, label: 'Library', color: 'bg-green-600' }
+            ].map(item => (
+              <div key={item.label} className="flex items-center">
+                <div className={`${item.color} p-2 rounded-lg mr-2`}>
+                  <item.icon className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-sm text-gray-700">{item.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderDetails = () => {
+    if (!selectedBuilding) return null;
+    const Icon = selectedBuilding.icon;
+    const isSaved = savedLocations.includes(selectedBuilding.name);
+
+    return (
+      <div className="flex-1 overflow-auto pb-20">
+        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6">
+          <button 
+            onClick={() => setActiveScreen('explore')}
+            className="text-white mb-4 flex items-center"
+          >
+            ← Back
+          </button>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="bg-white/20 p-3 rounded-xl mr-4">
+                <Icon className="w-8 h-8" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold">{selectedBuilding.name}</h1>
+                <p className="text-indigo-100 text-sm mt-1">{selectedBuilding.category}</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => toggleSaveLocation(selectedBuilding.name)}
+              className="bg-white/20 p-3 rounded-full"
+            >
+              <Star className={`w-6 h-6 ${isSaved ? 'fill-yellow-400 text-yellow-400' : ''}`} />
+            </button>
+          </div>
+        </div>
+
+        <div className="p-6">
+          {/* Quick Info */}
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+              <Clock className="w-6 h-6 text-blue-600 mb-2" />
+              <p className="text-xs text-gray-600">Hours</p>
+              <p className="font-semibold text-gray-800 text-sm mt-1">{selectedBuilding.timing}</p>
+            </div>
+            <div className="bg-green-50 rounded-xl p-4 border border-green-100">
+              <Phone className="w-6 h-6 text-green-600 mb-2" />
+              <p className="text-xs text-gray-600">Contact</p>
+              <p className="font-semibold text-gray-800 text-sm mt-1">{selectedBuilding.phone}</p>
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 mb-6">
+            <h3 className="font-semibold text-gray-800 mb-2">About</h3>
+            <p className="text-gray-600 text-sm leading-relaxed">{selectedBuilding.description}</p>
+          </div>
+
+          {/* Rooms */}
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 mb-6">
+            <h3 className="font-semibold text-gray-800 mb-3">Rooms & Facilities</h3>
+            <div className="space-y-2">
+              {selectedBuilding.rooms.map((room, index) => (
+                <div key={index} className="flex items-center p-2 bg-gray-50 rounded-lg">
+                  <div className="w-2 h-2 bg-indigo-600 rounded-full mr-3"></div>
+                  <span className="text-sm text-gray-700">{room}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Get Directions Button */}
+          <button 
+            onClick={() => setActiveScreen('map')}
+            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 rounded-xl font-semibold flex items-center justify-center shadow-lg hover:shadow-xl transition"
+          >
+            <Navigation className="w-5 h-5 mr-2" />
+            Get Directions
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderSearch = () => (
+    <div className="flex-1 overflow-auto pb-20">
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6">
+        <div className="bg-white rounded-2xl p-3 flex items-center shadow-lg">
+          <Search className="w-5 h-5 text-gray-400 mr-2" />
+          <input
+            type="text"
+            placeholder="Search buildings, rooms..."
+            className="flex-1 outline-none text-gray-700"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            autoFocus
+          />
+        </div>
+      </div>
+
+      <div className="p-6">
+        <h2 className="text-lg font-bold text-gray-800 mb-4">
+          {filteredBuildings.length} Results Found
+        </h2>
+        <div className="space-y-3">
+          {filteredBuildings.map(building => {
+            const Icon = building.icon;
+            return (
+              <div
+                key={building.id}
+                onClick={() => {
+                  setSelectedBuilding(building);
+                  setActiveScreen('details');
+                }}
+                className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition"
+              >
+                <div className="flex items-center">
+                  <div className="bg-indigo-100 p-3 rounded-xl mr-4">
+                    <Icon className="w-6 h-6 text-indigo-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-800">{building.name}</h3>
+                    <p className="text-sm text-gray-500">{building.category}</p>
+                    <p className="text-xs text-gray-400 mt-1">{building.rooms.length} rooms/facilities</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderProfile = () => (
+    <div className="flex-1 overflow-auto pb-20">
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6 rounded-b-3xl">
+        <div className="flex items-center">
+          <div className="bg-white/20 p-4 rounded-full mr-4">
+            <User className="w-12 h-12" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold">Alex Johnson</h1>
+            <p className="text-indigo-100 text-sm">Student ID: CS2024-1234</p>
+            <p className="text-indigo-100 text-sm">Computer Science, Year 1</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-6">
+        {/* Stats */}
+        <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="bg-blue-50 rounded-xl p-4 text-center border border-blue-100">
+            <p className="text-2xl font-bold text-blue-600">{savedLocations.length}</p>
+            <p className="text-xs text-gray-600 mt-1">Saved</p>
+          </div>
+          <div className="bg-green-50 rounded-xl p-4 text-center border border-green-100">
+            <p className="text-2xl font-bold text-green-600">12</p>
+            <p className="text-xs text-gray-600 mt-1">Visited</p>
+          </div>
+          <div className="bg-purple-50 rounded-xl p-4 text-center border border-purple-100">
+            <p className="text-2xl font-bold text-purple-600">5</p>
+            <p className="text-xs text-gray-600 mt-1">Classes</p>
+          </div>
+        </div>
+
+        {/* Saved Locations */}
+        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 mb-6">
+          <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
+            <Star className="w-5 h-5 text-yellow-500 mr-2 fill-yellow-500" />
+            Saved Locations
+          </h3>
+          <div className="space-y-2">
+            {savedLocations.map(location => {
+              const building = buildings.find(b => b.name === location);
+              return (
+                <div 
+                  key={location}
+                  onClick={() => {
+                    setSelectedBuilding(building);
+                    setActiveScreen('details');
+                  }}
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition"
+                >
+                  <span className="text-sm text-gray-700">{location}</span>
+                  <ChevronRight className="w-4 h-4 text-gray-400" />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Settings */}
+        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+          <h3 className="font-semibold text-gray-800 mb-3">Settings</h3>
+          <div className="space-y-3">
+            {['Notifications', 'Map Preferences', 'Language', 'Help & Support'].map(item => (
+              <div key={item} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition">
+                <span className="text-sm text-gray-700">{item}</span>
+                <ChevronRight className="w-4 h-4 text-gray-400" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
+      <div className="w-full max-w-md h-[740px] bg-gray-50 rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+        {/* Screen Content */}
+        {activeScreen === 'home' && renderHome()}
+        {activeScreen === 'explore' && renderExplore()}
+        {activeScreen === 'map' && renderMap()}
+        {activeScreen === 'details' && renderDetails()}
+        {activeScreen === 'search' && renderSearch()}
+        {activeScreen === 'profile' && renderProfile()}
+
+        {/* Bottom Navigation */}
+        <div className="bg-white border-t border-gray-200 px-6 py-3 flex justify-around items-center shadow-lg">
+          {[
+            { id: 'home', icon: Home, label: 'Home' },
+            { id: 'explore', icon: Building2, label: 'Explore' },
+            { id: 'map', icon: MapPin, label: 'Map' },
+            { id: 'profile', icon: User, label: 'Profile' }
+          ].map(nav => (
+            <button
+              key={nav.id}
+              onClick={() => {
+                setActiveScreen(nav.id);
+                setSearchQuery('');
+              }}
+              className="flex flex-col items-center"
+            >
+              <nav.icon 
+                className={`w-6 h-6 mb-1 ${activeScreen === nav.id ? 'text-indigo-600' : 'text-gray-400'}`}
+              />
+              <span className={`text-xs ${activeScreen === nav.id ? 'text-indigo-600 font-semibold' : 'text-gray-400'}`}>
+                {nav.label}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CampusGuideApp;
